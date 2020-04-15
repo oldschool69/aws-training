@@ -1,0 +1,1189 @@
+===========================
+AWS Developer Certification
+===========================
+
+====
+IAM
+====
+
+  - Serviço para a criação e gerenciamento de contas de usuário
+  - Gerencia níveis de acesso ao AWS console
+  - Identity federation (Login using Facebook, Linkedin, AD) 
+  - Multifactor authentication
+  - Permite acesso temporário a usuarios, devices e serviços
+  - Integração com outros serviços AWS
+  - Termos chave:
+    - Users
+    - Groups
+    - Roles - set de permissões para recursos da AWS
+    - Policies - set de permissões que podem ser atribuidas a um grupo ou usuario.
+	
+=====================================================
+EC2 (Elastic Compute Cloud) Servidor virtual na nuvem
+=====================================================
+
+  - Web Service that provides resizable compute capacity in the cloud.
+  - Tipos de instancias
+    - On Demand: aplicações em desenvolvimento our com utilização não previsível de recursos.
+
+    - Reserved:  
+	Aplicações prontas ou com utilização previsível de recursos. 
+	Upfront payment.
+
+    - Spot:
+	Aplicações que tem horaŕio de unicialização e parada flexíveis.
+	Aplicações viáveis somente com custos computacionais bem baixos.
+
+    - Dedicated Hosts
+
+==================================================
+EBS (Elastic Block Storage) Disco Virtual na nuvem
+==================================================
+
+  - Disco virtual attachado a uma instância EC2
+
+  - Volume Types
+
+    - General purpose SSD (GP2)
+
+    - Throughput  Optimized HDD (ST1)
+	- Cannot be a boot volume
+	- Frequently accessed
+  
+    - Cold HDD
+	- Lowest cost HDD.
+	- Less frequently accessed workloads
+
+===========================
+ELB (Elastic Load Balancer)
+===========================
+
+- Distribue a carga de request entre servidores (instancias)
+
+- Tipos de load balancer:
+
+	- Application Load Balancer
+
+		- Recomendádo para tráfego http e https
+
+	- Network Load Balancer
+	
+		- Alta performance
+		- Recomendado para tráfego TCP
+		- Capaz de tratar milhoes de de requests por segundo mantendo baixa latência
+		- Maior custo
+
+	- Classic Load Balancer
+
+		- Legacy purposes
+		- Erro 504: Possível erro na camada de aplicação ou banco de dados
+=======		
+Route53
+=======
+
+- Serviço de DNS da Amazon
+
+- Mapeia nomes de domínio para:
+
+	- Instancias EC2
+	- Load Balancers
+	- S3 Buckets
+
+- No Route53, o DNS é criado e associado com o LoadBalancer
+ 
+- O LoadBalancer é criado a partir de uma máquia no EC2
+
+==============================
+S3 (Armazenamento de Arquivos)
+==============================
+
+
+***Associar um role criado no IAM a uma instancia
+
+	1 - No EC2, selecionar a instancia e clicar em "Actions"
+	2 - Menu "Instance Settings", opção "Attach/Replace IAM Role"
+	3 - Se existirem credencias antigas ir no diretorio ~/.aws 
+	    e apagar os arquivos credentials e config
+
+=================================		
+RDS (Relational Database Service)
+=================================
+
+Suporta os databases:
+
+	Relacionais:
+
+		- SQL Server
+		- Oracle
+		- MySQL Server
+		- PostgreSQL
+		- Amazon Aurora
+		- MariaDB
+		
+	NoSQL/JSON:
+	
+		- Amazon DynamoDB
+		
+	RedShift (OLAP)
+
+		- Usado em BI and Big Data
+	
+	ElastiCache:
+	
+		- Web service que fornece in memory cache na nuvem
+		
+		- Melhora a performance de aplicações web através de cache, 
+		  ao invés de utilizar somente o acesso mais lento
+		  de databases no disco.
+		  
+		- Suporta Memcached e Redis
+			
+		  
+	
+	*** Para habilitar o acesso de uma instancia EC2 em um SG (Security Group) a uma instancia
+        de um db no RDS em outro SG
+
+			1 - Ir na instancia do db no RDS e selecionar o SG (Inbound)
+			2 - Edit inbound rules -> Add Rule
+			3 - Adicionar uma nova Rule to tipo MySQL/Aurora (Porta 3306)
+			4 - Na textbox custom, começar a digitar o nome do SG do EC2.
+			5 - Selecionar o SG da instancia EC2 e Salvar
+			
+	Mecanismos de Backup
+	
+		Automated Backups
+
+			- Habilitados por padrão
+			- O back é armazenado no S3.
+			- Free storage do mesmo tamanho do database
+
+		DB Snapshot
+
+			- Feitos manualmente
+			- Armazenados mesmo após deletar a instancia RDS, diferente de backups automatizados
+			
+	
+		Restore
+
+			- Se restaurar um backup, tanto manual como automático, o database	
+			   restaurado criará uma nova instancia RDS com um novo DNS endpoint.
+			   
+	Recursos Multi-AZ RDS
+
+		- Permite ter uma cópia exata do dabase de produção em zona disponível
+		
+		- Quando ocorre alguma escrita no DB, o AWS se encarrega de replicar as
+		  modificações na instancia rodando em outra zona.
+		  
+		- Usado para recuperação de desastres/falhas
+		
+
+Elastic Cache
+
+	- Tipos
+	
+		Memcached
+		Redis
+		
+	- Suporta replicação Master/Slave e Multi-AZ
+
+	- ElastiCache gerencia o Redis como um database relacional.
+
+	- Clusters Redis são gerenciados como entidades stateful incluindo failover 
+	
+	- Mencached são soluções de cache puras, que não possuem persistencia.
+	
+	- Mencached, casos de uso:
+	
+		- Se o objetivo principal for caching de objetos, por exemplo, offload de database
+		- Modelo mais simples de caching
+		- Se está planejando executar grandes cache nodes, e necessita perfomance multi threading
+		  com a utilização de multiplos cores.
+		- Necessita de habilidade para escalar o cach horizontalmente a medida
+		  o volume de dados cresce.
+		  
+	- Redis, casos de uso:
+
+		- Precisa de tipos e dados mais avançados como listas, hashes and sets.
+		- Precisar de sort e ranking de databses na memória.
+		- Importante ter persistência da key store.
+		- Precisa executar in multiplas AWS Availability Zones com recursos de failover.
+
+============
+S3 in Detail
+============
+
+- Core fundamentals:
+
+	- Key é o nome do bucket (e.g s3://my-bucket-123/fotos/foto001.jpg), portando
+	  precisa ser único.
+	  
+	- Value é o conteúdo/dado do arquivo
+
+	- Version ID
+	
+	- Metadata são dados sobre os dados dos buckets.
+	
+	- Subresources:
+	
+		- Bucket policies
+		
+		- CORS
+		
+		- Transfer Acceleration
+
+- Object storage
+
+	- Arquivos
+	- Imagens
+	- Is not for persistence
+	- Permite que faça upload de arquivos
+	- Arquivos podem ter de 0 a 5 TB
+	- Espaço ilimitado.
+	- Namespace universal, os nomes precisam ser únicos
+
+- Suporta controle de versão (múltiplas versões do mesmo arquivo)
+
+- Metadata (data about you are storing)
+
+- Bucket Policies
+
+- Access control list
+
+- CORS
+
+- Transfer acceleration
+
+- Disponibilidade de 99.9% (Garantido pela Amazon)
+
+- Security on S3:
+
+	- Private por padrão (somente on owner do bucket tem acesso)
+	- Bucket Policies - aplicada no bucket todo
+	- Access Control Lists - aplicada no nível de objeto.
+	
+	- S3 Encryption:
+
+		- In transit (Download/Upload de arquivos do PC)
+			
+			- SSL/TLS (HTTPS)
+			
+		- A Rest:
+		
+			- Server Side Encryption
+				
+				- SSE-S3: S3 Managed Keys
+				- SSE-KMS: AWS Key Management Service
+				- SSE-C: Service Side with Customer Provided Keys
+			
+			- Client Side Encryption
+			
+				- Encripta os arquivos localmente antes de subir para o S3
+				
+		- Enforce use of encryption: 
+
+			- Usar uma S3 Bucket policy para negar todos os PUT requests 
+              que não incluirem o parâmetro x-amz-server-side-encryption
+			  no header do request.
+			  
+		
+	- CORS
+
+		- Permite acesso de recursos entre diferentes buckets
+		
+Clould Front
+
+	- É uma CDN (Content Delivery Network)
+	
+		- Sistema de servidores distribuidos que provê webpages
+		  e outros conteúdos web para o usuário baseado na sua
+		  geo localização, a origem da webpage e servidor de conteúdo 
+		  
+	- Pode ser usado para fazer o deliver de um website incluindo conteúdo
+	  dinamico, estático, streaming e interativo utilizando uma rede global
+	  de edge locations (servidores distribuidos por região)
+	  
+	- Requests para o conteúdo do website são automaticamente roteados para 
+      a edge location mais próxima da localização do usuário, entregando 
+	  conteúdo com a melhor peformance possível.
+
+		e.g Pode ser utilizado para otimizar performance para usuários 
+		    acessando um website hospedado no S3.
+			
+	- Distribution types
+
+		- Web Distribution: Usado para websites, HTTP e HTTPS
+		
+		- RTMP Distribution: Media streaming /Flash multi-media content
+		
+	
+Performance Optimization
+
+
+	- GET-Intensive Workloads
+
+		- Utilizar o CloudFront content delivery service.
+		
+		- CloudFront utiliza cache para os objetos mais frequentemente acessados
+		
+		- Reduz latência para os GET requests.
+			  
+		  
+S3 Storage Classes/Tiers:
+
+	- S3: durable, immediately available, frequently accessed.
+	
+	- S3-IA: durable, immediately available, infrequently accessed.
+	
+	- S3-One Zone IA: Same as IA, porem o dado e armazenado em apenas uma Availability Zone.
+
+	- S3-Reduced Redundancy Storage: data easily reproducible, such as thumbnails, etc.
+ 
+    - Glacier - Archived data, where you can wait 3 - 5 hours before accessing.
+	
+===================
+Serveless Computing
+===================
+
+
+	- AWS Lambda
+
+		- Realiza upload de código e cria lambda function
+		
+		- O serviço cuida do provisionamento e gerenciamento dos servidores
+		  utilizados para executar o código
+		  
+		- Não é necessário se preocupar com SO, patching e scaling.
+
+		- Pode utilizar Lambda das seguintes formas:
+		
+			- Serviço orientado a eventos onde o AWS Lambda executa 
+			  o código em resposta a eventos. Esses eventos poderiam ser
+			  disparados por mudanças de dados em um bucket S3 ou em uma
+			  tabela do Amazon DynamoDB.
+			  
+			- O código é executado em resposta a requests HTTP utilizando
+			  Amazon API Gateway ou chamadas para APIs através do AWS SDKs
+			  
+		- Possibilita a execução de multiplos requests para a mesma API em paralelo.		
+
+		- Linguagens suportadas:
+		
+			- Node.js
+			- Java
+			- Python
+			- C#
+			- Go
+			
+		- Como é cobrado:
+
+			- Número de requests
+			- Primeiro 1Mi de requests é de graça
+			- $0.20 por milhão de requests após isso. 
+			
+		- Why Lambda is Cool
+
+			- No servers
+			- Continous Scaling
+			- Super cheap
+			
+		- Amazon Echo (Alexa) utiliza serviço Lambda para o enviar
+		  texto interpretado pelo ASR e retorna o resultado processado
+          que é a voz da Alexa (TTS).
+
+		- Lambda functions podem disparar outras lambda functions.
+
+			1 event can = x functions if functions trigger other functions
+			
+		- AWS X-ray is a tool to debug a complicated system based in Lambda functions.
+
+        - Lambda pode realizar tarefas globalmente. É possível utilizar Lambda para 
+		  fazer backup de buckets S3 em outros buckets S3, por exemplo.
+
+	
+	- AWS API Gateway
+	
+		- Tipos de APIs:
+		
+			- REST APIs
+			
+				- Uses JSON
+				
+			- SOAP APIs
+
+				- Users XML
+				
+				
+		- Facilita a publicação, manutenção, monitoramento e segurança de APIs
+          em qualquer escala.
+
+		- O API gateway atua como um "front door" para aplicações cliente acessarem dados,
+		  regras de negócios ou funcionalidades dos serviços backend, como aplicações
+		  rodando no EC2, código rodando no AWS Lambda ou qualquer aplicação web.
+		  
+		  
+		- Expoe endpoints HTTPS que definem a RESTFul API
+		
+		- Serveless-ly conecta a serviços como Lambda e DynamoDB
+		
+		- Enviar cada API endpoint para um target diferente.
+		
+		- Executa de forma eficiente com um baixo custo.
+		
+		- Scala sem muito esforço.
+		
+		- Realiza o tracking e controle de uso através de uma API Key.
+		
+		- Throttle requests para previnir ataques.
+		
+		- Conecta no CloudWatch para logar todos os requests para monitoramento.
+		
+		- Recursos de caching (API caching)
+		
+	
+	- Step functions
+	
+	
+		- Under Application Integration service
+		
+		- Permite visualizar e testar aplicações serveless
+		
+		- Fornece uma ferramenta gráfica que organiza e visualiza os
+		  componentes da aplicação como uma série de steps.
+		  
+		- Torna mais fácil buildar e executar multi step applications
+
+		- Tipos:
+		
+			- Sequential Steps
+			
+			- Branching Steps (Choice of path)
+			
+			- Parallel Steps
+			
+			
+	- X-Ray
+
+		- Serviço que coleta dados sobre requests das aplicações.
+		
+		- Fornece ferramentas para visualizar, filtrar.
+		
+		- Ajuda a identificar issues e oportunidades de otimização.
+		
+		- Registra não somente os requests para aplicação, mas também 
+		  chamadas para AWS resources, microserviços, banco de dados e
+          APIs http.
+
+		- X-Ray SDK:
+
+			- Fornece "Interceptors" para adicionar no código para fazer
+			  o trace de requests HTTP recebidos pela aplicação.
+			
+			- Client Handlers para instrumentar AWS SDK Clients que a aplicação 
+			  utiliza para chamar outros serviços AWS.
+			  
+			- Um client HTTP usado para instrumentar chamadas para outros 
+			  web services HTTP, internos ou externos.
+			  
+			- Integra com os seguintes serviços AWS:
+
+				- Elastic Load Balancing
+				- AWS Lambda
+				- Amazon API Gateway
+				- Amazon Elastic Compute Cloud EC2
+				- AWS Elastic Beanstalk
+				
+			- Linguagens suportadas:
+			
+				- Java
+				- Go
+				- Node.js
+				- Python
+				- Ruby
+				- .Net
+			  
+		- Advanced API Gateway
+		
+			- Possivel importar APIs usando arquivo no formato Swagger v2.0
+			
+			- API Throttling
+			
+				- Por padrão limita o request-rate para 10k requests por segundo (rps)
+				
+				- Número máximo de requests concorrentes é 5k entre todas as APIs
+				  atreladas a uma conta AWS.
+				  
+				- Se ultrapassar os 10k requests pro segundo or 5k requests concorrentes, 
+                  a API retorna o erro 429 Too many requests.
+
+				- Possível configurar API Gateway como um Web Service SOAP passthrough
+				
+
+=========
+Dynamo DB
+=========
+
+	- NoSQL
+	
+	- Support both document and key-value model
+	
+	- Armazenado em SSDs
+	
+	- Distribuido entre 3 data centers geograficamente distribuidos
+	
+	- Opçao de 2 modelos de consistencia:
+	
+		- Eventual Consistent Reads (Default)
+		
+		- Strongly Consistent Reads 
+		
+	- Pure serveless
+
+
+	- Indexes:
+
+		- Local secondary index:
+		
+		- Global secondary index:
+		
+	
+	- Query muito mais eficiente que Scan	
+	
+	- Utiliza Read e Write capacity units
+	
+	- Se a sua aplicação ler e escrever grandes quantidades de dados, 
+      maior será o consumo e consequentemente o custo do serviço na AWS.
+
+    - On Demand capacity:
+
+		- Cobrança aplicada por leitura, escrita e armazenamento dos dados.
+		- Não é necessário especifcar os capacity requirements.
+		- Escala automaticamente.
+		- Pagar somente pelo que irá utilizar.
+	
+	- Dynamo DB Accelerator (DAX)
+	
+		- Fully managed, clustered in-memory cache for DynamoDB
+		- Point your API calls the DAX cluster, instead of your table
+		
+	- Elasticache
+
+		- in Memory cache in the cloud
+		- Fica entre a aplicação e o database.
+		- Types
+			- Memcached
+			- Reddis
+			
+	- TTL (Time To Live)		
+	
+	
+	
+============================
+KMS (Key Management Service)		
+============================
+
+
+
+============================
+Other AWS Services		
+============================
+
+	
+
+	- SQS:
+	
+		- Message queue
+		
+		- A queue funciona como um buffer entre o componente produzindo e salvando dados e o componente
+		  que recebe dados para processamento
+		  
+		- Queue Types:
+
+			- Standard Queues
+			
+				Nao garante uma ordem para disponibilização dos dados, podendo variar
+				de acordo com a quantidade de dados recebidos/consumidos.
+			
+			- FIFO Queues
+			
+				Garante a ordem dos dados recebidos/consumidos.
+				
+			- pull based
+
+	
+	- SNS: Simple Notification Service
+	
+		- Push cloud notifications directly no mobile devices
+		- SMS
+		- email to SQS service
+		- Any http endpoint
+		- Can trigger Lambda functions
+		- Instantaneous, push-based delivery (no polling)
+		- Asynchronous
+		
+		
+	- SES: Simple Email Service
+
+		- Synchronous
+		- Email only
+		
+		
+	- ElasticBeansTalk
+	
+		- Service to deploying and scalling web applications.
+		
+		- Web applications built with popular languages:
+		
+			- Java
+			- .Net
+			- PHP
+			- Node.js
+			- Python
+			- Ruby
+			- Go
+			- Docker
+
+		- Widely used server plataforms:
+
+			- Apache Tomcat
+			- Nginx
+			- Passenger
+			- IIS
+		
+		- Developers can focus on writing code and don't need to worry 
+		  about any of the underlying infrastructure needed to run the application
+		  
+		- Pay only for the AWS resources required to store and run your applications
+          (e.g EC2 instances and S3 buckets)
+
+		- Fastest and simplest way to deploy yout application into AWS.
+
+		- Automatically scalling.
+		
+		- All at once Deployment:
+		
+			- Deploy the new versions for all instances simulaneously
+			
+		- Arquivo de configuração .ebextensions
+
+			- Precisa ser incluido na pasta root do código da aplicação
+			
+			- Precisa ser versionado juntamente com o resto do código da aplicação
+			
+			- Formato json
+			
+			
+		- RDS (Relational Data Service) & ElasticBeansTalk
+
+			- Quando vc deleta um um environment, os bancos dados no environment juntamente com os dados, 
+			  são removidos também.
+			  
+			- Em ambientes de produção, o banco de dados deve ser desclopado do ambiente Elastic Beanstalk, 
+			  a instancia do banco deve estar na seção RDS do console.
+			  
+			- Desaclopando o baco do elastic, permite utilizar o mesmo banco em múltiplos environments e um
+              número maior de possibilidades de escolhas de diferentes databases.
+
+
+========
+Kinesis
+========
+
+	
+	- Streaming data
+	
+		- Exemplos:
+
+			- Purchases from online stores
+			- Stock prices
+			- Game data (as the gamer plays)
+			- Social Network data
+			- Geospatial data (Uber.com)
+			- IoT sensor
+			
+			
+	- Kinesis Streams
+	
+		- Stored in Shards
+		- Retained for 24hs to 7 days
+		
+
+	- Kinesis Firehose
+	
+		- No worries about shards and streams (they are created automatically)
+		
+		- Analytics is optional but can be analyzed using lambda
+		
+		- Analized data can be stored on:
+		
+			- S3
+			- Elasticsearch cluster
+	
+	- Kinesis Analytics
+	
+		- Allows to run SQL queries of the data 
+		
+		- Can use SQL querie to store data inside:
+		
+			- S3
+			- Redshift
+			- Elasticsearch Cluster
+			
+			
+================
+Developer Theory
+================
+
+
+	- CI/CD
+	
+		- Make small changes and automate everthing!
+		
+			- code integration
+			- build
+			- test and deployment
+			
+			
+	- CodeCommit (AWS tool for source and version control)
+
+		- Based on Git
+		
+		
+	- CodeBuild (AWS tool for building and test)	
+	
+	
+	- CodeDeploy (AWS tool for automate deployment)
+	
+		- EC2 instances, on-premises and Lambda.
+		
+		- Deployment Approaches
+		
+			- In-Place
+			
+				- The application is stopped on each instance and the new release is installed. 
+				  Also known as a Rolling Update
+				  
+				- Time consuming Roll Back, need to re-deply previous version.
+				
+			- Blue/Green
+			
+				- News instances are provisioned and the new release is installed on the new instance.
+				
+				- Blue represents the active deployment, green is the new release.
+				
+				- Easy roll back, just set the Load Balancer to direct the traffic back to the
+				  original environment.
+				  
+				- Safest option
+
+		- AppSpec file
+			
+			- for EC2 supports yml format only
+			
+			- for Lambda supports both yml and json formats
+			
+			- Sections of configuration file:	
+			
+				- version
+				- OS (Linux or Windows)
+				- files (files that need to copied)
+				- hooks (deployment lifecycle)
+				
+					- BeforeInstall
+					- AfterInstall
+					- ApplicationStart
+					- ValidadeService
+					- etc..
+			
+			- Typifical folder structure:
+
+				- appspec.yml
+				  - /Scripts
+				  - /Config
+				  - /Source
+				  
+		- LifeCycle Event hooks:
+
+			- InPlace deployment:
+			
+				- Phase 1: 
+				
+					- De-register instances from a load balancer
+						
+						1 - BeforeBlockTraffic
+						2 - BlockTraffic
+						3 - AfterBlockTraffic
+						
+					
+				- Phase 2:
+
+					- the real nuts & bolts of the application deployment
+					
+						1 - ApplicatioStop
+						2 - DownloadBundle
+						3 - BeforeInstall
+						4 - Install
+						5 - AfterInstall
+						6 - ApplicationStart
+						7 - ValidadeService
+					
+				- Phase 3:
+
+					- Re-register istances with the load balancer
+					
+						1 - BeforeAllowTraffic
+						2 - AllowTraffic
+						3 - AfterAllowTraffic
+				
+				
+	
+	
+	- CodePipeline (AWS tool to manage the all workflow)
+	
+		- Fully managed CI/CD Services
+		
+		- Orchestrated Build, Test and Deployment
+		
+		- The pipeline is triggered every time there is a change to your code.
+		
+		- Integrates with:
+		
+			- CodeCommit
+			- CodeBuild
+			- CodeDeploy
+			- Github
+			- Jenkins
+			- ElasticBeansTalk
+			- CloudFormation
+			- Lambda
+			- Elastic Container Service
+		
+
+================================
+ECS (Elasctic Container Service)
+================================
+
+
+	- Container orchestration service
+	
+	- Vantagens de utilizar containers e arquitetura de microserviços
+	
+		- Escalável
+		
+			No caso de queda de performance, voce escala somente os microserviços que estão sobrecarregados.
+		
+		- Tolerante a faltas
+		
+			Se acontecer um erro em um dos containers, o sistema como um todo não será derrubado
+			
+		- Mais fácil de manter do que monolitos
+
+	- Similar com o Kubernetes mas com uma integração mais profunda com outros serviços AWS		
+
+	- Opçoes:
+	
+		1 - Cluster of Virtual Machines
+		
+			- ECS will run your containers on clusters of virtual machines (EC2 instances)
+			
+		2 - Fargate for Serveless
+
+			- Don't need to worry about the underlying EC2 instances.
+			
+		3 - EC2 for more control
+
+			- If you want to control the installation, configuration and management of
+			  your compute environment.
+	
+
+===============
+Cloud Formation
+===============
+
+	- Allows you to manage, configure and provision your AWS infrastructure as a code.
+	
+	- Utiliza templates no formato JSON ou YAML para criar toda a infrastrutura (e.g EC2 instances, S3 buckets etc)
+	
+	- SAM (Serveless Application Model):
+	
+		- Extension of CloudFormation used to define serveless applications.
+		
+	- Nested Stacks
+
+		- Templates refered inside templates
+		
+
+===============
+Advanced IAM
+===============
+
+	- Web identity federation:
+	
+		- Access to AWS resources after they have successfully authenticatd with
+		  a Amazon, Facebook or Google account.
+		  
+	
+	- Amazon Cognito
+	
+		- Amazon Cognito Use Cases:
+
+			- The recommended approach for Web Identity Federation using social media
+			  accounts like Facebook.
+			  
+			  
+	- Types of Policies
+
+		- Managed Policies
+		
+			- Criado e Gerenciado pela AWS:
+			
+				- Exemplos:
+				
+					- AmazonDynamoDBFullAccess
+					- AmazonEC2ReadOnlyAccess
+					
+			- Dont need to write the policy yourself
+
+			- Can be attached to multiple users, groups or roles within the same AWS account
+			  or accross different accounts
+  			
+		
+		- Customer Managed Policies
+		
+		
+			- Standalone policy that you create and adminitrate inside your own AWS account
+			
+			- Copy the json of a existing Managed Policy and modify to attend the requirements of
+			  your organization.
+			  
+			- Recommended for user cases where the existing AWS Managed Policies don't meet the 
+			  needs of yout requirements.
+		
+		
+		- Inline Policies
+		
+		
+	- STS AssumeRoleWithWebIdentity
+
+
+		- API provided by STS (Security Token Service)
+		
+		- Returns temporary security credentials for users authenticated by a mobile or web
+		  application or using a Web ID provider like Amazon, Facebook, Google, etc.
+		  
+		- For mobile application, Cognito is recommended.
+		
+		- Regular web applications can use the STS assume-role-with-web-identity API.
+		
+
+===============
+Cloud Watch
+===============
+
+
+	- Can monitoring things like:
+	
+		- Compute:
+		
+			- Autoscaling groups
+			
+			- Elastic Load Balancers
+		
+		- Storage and Content Delivery:
+		
+			- EBS Volumes
+			
+			- Storage Gateways
+			
+			- CloudFront
+			
+		- Databases and Analytics:
+
+			- DynamoDB
+			
+			- Elasticache Nodes
+			
+			- RDS Instances
+			
+			- Elastic MapReduce Job Flows
+			
+			- Redshift
+			
+		- Other:
+		
+			- SNS Topics
+			
+			- SQS Queues
+			
+			- Opsworks
+			
+			- CloudWatch Logs
+			
+			- Estimated Charges on your AWS Bill
+			
+			
+	- Can create alarms to monitor any Amazon CloudWatch metric:
+	
+		- EC2 CPU utilization
+		
+		- Elastic Load Balancer latency
+		
+		- Charges on AWS bill
+		
+		- Can set thresholds in wich to trigger alarms
+		
+		- Set actions that should be taken if an alarm 
+		  state is reached.
+		  
+		  
+	- CloudWatch vs CloudTrail vs AWS Config
+
+		- CloudWatch monitors performance
+		
+		- CloudTrail monitors API calls in the AWS platform
+		
+		- AWS Config records the state of your AWS environment and can notify
+		  you of changes
+		  
+===============
+Specific Topics
+===============
+
+
+	- SQS Delay Queues
+	
+		- Pospone delivery of new messages to a queue for a number of seconds
+		
+		- Usages:
+		
+			- Large distributed applications which may need to introduce a delay in processing
+			
+			- You need to apply a delay to an entire queue of messages
+			
+			- e.g add a delay of a few seconds, to allow for updates to your sales
+			  and stock control databases before sending notification to a customer 
+			  confirming an online transaction.
+			  
+		- Best pratices for managing large SQS Messages using S3
+
+			- For larger SQS messages - 256KB to 2GB in size
+			
+			- Use S3 to store the messages
+			
+			- Use Amazon SQS Extend Client Library for Java to manage them
+			
+			- You will also need the AWS SDK for Java - provides a API for S3 
+			
+			  bucket and object operations
+			  
+	
+	- IAM Policy simulator:
+
+		- Test effect of IAM Policies before commiting them to production
+		
+		- Validate that the policy works as expected
+		
+		- Test policies already attached to existing users - great 
+		  for troubleshooting an issue when you suspect is IAM related
+		  
+	- Lambda Concurrent Executions Limit
+
+		- Default is 1k concurrent executions per second
+		
+		- If the limit is exceded you'll receive TooManyRequestsException and http status code 429
+
+		- Request AWS support to increase the limit if necessary
+		
+	
+	- Enable Lambda to access resources from a private VPC
+	
+		- e.g read or write to an RDS database, or shut down an EC2 instance is response 
+		  to a security alert
+		  
+		- Lambda needs the following VPC Configuration information so that it can connect 
+          to the VPC:
+
+			- Private subnet ID
+
+			- Security group id (with required access)
+
+			- Lambda use this information to set up ENI (Elastic Network Interface) using an available IP address 
+			  from your private subnet.
+			  
+			- Use the "vpc-config" parameter
+
+            - VPC option also available at AWS console when creating the lambda function
+
+	- X-Ray Configuration
+
+		- Check for performance bootnecks on your distributed system based in Lambda or microservices.
+		
+		- Run on EC2 instances
+		
+		- Run on serveless applications with Lambda, DynamoDB etc 
+		
+		- Need to use X-Ray SDK
+		
+			- Instrument your application to send the required data
+			
+		- X-Ray high level configuration steps:
+
+			1 - On premises & EC2 instances
+			
+				- Install the X-Ray daemon on your EC2 instance or on-premises server.
+				
+			2 - Elastic Beanstalk
+
+				- Install the X-Ray daemon on the EC2 instances inside your
+				  Elastic Beanstalk environment.
+				  
+			3 - Elastic Container Service
+
+				- Install the X-Ray daemon in its own Docker container on your ECS cluster
+				  alongside your app.
+				  
+	
+	- Deploying Docker Using Elastic Beanstalk
+
+		
+		- Elastic Beanstalk supports the deployment of Docker containers
+		
+		- Elastic Beanstalk handles the capacity provisioning, load balancing, 
+		  scalling, and application helth monitoring.
+
+		- Single Docker Container
+		
+			- You can either run a single Docker container on an EC2 instance provisioned 
+			  by Elastic Beanstalk
+			  
+		- Multiple Docker Containers
+
+			- Use Elastic Beanstalk to build an ECS cluster and deploy
+			  multiple Docker containers on each instance.
+			  
+		- Deploy your code 
+
+			- Upload a zip file containing your code bundle and Elastic Beanstalk
+			  will do the rest
+			  
+		- Update your code
+
+			- If you want to update your application to a new version, it's one
+			  easy step in the console to upload and deploy.
+
+		
+		   
+
+          		
+			
+
+	
+
+
+
+
+	
+		  
+		
+
+  
